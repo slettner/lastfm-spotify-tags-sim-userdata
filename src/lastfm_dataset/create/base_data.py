@@ -1,21 +1,24 @@
 """ Impement """
-import sqlite3
 import os
+import sqlite3
 from contextlib import contextmanager
-from typing import Set, Optional, List
+from typing import List, Optional
 
-from lastfm_dataset.constants import ROOT_DIR, DATA_DIR
-from lastfm_dataset.create.processed_lastfm_data import get_all_tags, populate_tracks_table
+from lastfm_dataset.constants import DATA_DIR, PATH_TO_RESULT, ROOT_DIR
+from lastfm_dataset.create.track_and_tags_data import (
+    get_all_tags,
+    populate_tracks_table,
+)
+from lastfm_dataset.create.user_behavior_data import populate_users_table
 from lastfm_dataset.create.utils import row_factory
 
 
 @contextmanager
 def create_database_file(overwrite_existing: bool = False):
 
-    target_path = os.path.join(ROOT_DIR, DATA_DIR, 'dataset.db')
-    if os.path.isfile(target_path) and not overwrite_existing:
-        raise FileExistsError(target_path)
-    con = sqlite3.connect(target_path, isolation_level=None)
+    if os.path.isfile(PATH_TO_RESULT) and not overwrite_existing:
+        raise FileExistsError(PATH_TO_RESULT)
+    con = sqlite3.connect(PATH_TO_RESULT, isolation_level=None)
     if overwrite_existing:
         drop_all_tables(con)
     con.row_factory = row_factory
@@ -36,15 +39,16 @@ def create_all_tables(con: sqlite3.Connection):
 
 
 def drop_all_tables(con: sqlite3.Connection):
-    con.execute("""DROP TABLE track_users;""")
-    con.execute("""DROP TABLE similar;""")
-    # con.execute("""DROP TABLE tags;""")
-    con.execute("""DROP TABLE users;""")
-    # con.execute("""DROP TABLE tracks;""")
+    con.execute("""DROP TABLE IF EXISTS track_users;""")
+    con.execute("""DROP TABLE IF EXISTS similar;""")
+    con.execute("""DROP TABLE IF EXISTS tags;""")
+    con.execute("""DROP TABLE IF EXISTS users;""")
+    con.execute("""DROP TABLE IF EXISTS tracks;""")
 
 
 def populate_all_tables(con: sqlite3.Connection, limit: Optional[int] = None):
     populate_tracks_table(con, limit)
+    populate_users_table(con)
 
 
 def create_track_table(con: sqlite3.Connection):
@@ -64,17 +68,14 @@ def create_track_table(con: sqlite3.Connection):
 def create_users_table(con: sqlite3.Connection):
     sql = """
         CREATE TABLE IF NOT EXISTS users (
-            user_id INTEGER PRIMARY KEY,
-            taste_profile_id TEXT NOT NULL
+            user_id TEXT PRIMARY KEY
         );
     """
     con.execute(sql)
 
 
 def create_tags_table(con: sqlite3.Connection, tags: List[str]):
-    tags_sql = ", ".join(
-        f"'{tag_name}' INTEGER NOT NULL" for tag_name in tags
-    )
+    tags_sql = ", ".join(f"'{tag_name}' INTEGER NOT NULL" for tag_name in tags)
     sql = f"""
         CREATE TABLE IF NOT EXISTS tags (
             track_id INTEGER,
@@ -107,7 +108,3 @@ def create_track_user_table(con: sqlite3.Connection):
         );
     """
     con.execute(sql)
-
-
-
-

@@ -18,7 +18,7 @@ The sqlite database contains the following tables:
 `track_id` | `name` | `artist` | `spotify_preview_url` | `lastfm_url` | `spotify_id`
 
 ### Users
-`user_id` | `taste_profile_id`
+`user_id`
 
 ### Tags
 `track_id` | `tag_name_0`| `tag_name_1`| `tag_name_2`| `tag_name_3` ...
