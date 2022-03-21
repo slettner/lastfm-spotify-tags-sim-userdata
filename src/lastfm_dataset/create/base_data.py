@@ -1,10 +1,11 @@
-""" Impement """
+""" Impements table creations. """
 import os
 import sqlite3
 from contextlib import contextmanager
 from typing import List, Optional
 
-from lastfm_dataset.constants import DATA_DIR, PATH_TO_RESULT, ROOT_DIR
+from lastfm_dataset.constants import PATH_TO_RESULT
+from lastfm_dataset.create.similars_data import populate_similars_table
 from lastfm_dataset.create.track_and_tags_data import (
     get_all_tags,
     populate_tracks_table,
@@ -15,7 +16,6 @@ from lastfm_dataset.create.utils import row_factory
 
 @contextmanager
 def create_database_file(overwrite_existing: bool = False):
-
     if os.path.isfile(PATH_TO_RESULT) and not overwrite_existing:
         raise FileExistsError(PATH_TO_RESULT)
     con = sqlite3.connect(PATH_TO_RESULT, isolation_level=None)
@@ -49,6 +49,7 @@ def drop_all_tables(con: sqlite3.Connection):
 def populate_all_tables(con: sqlite3.Connection, limit: Optional[int] = None):
     populate_tracks_table(con, limit)
     populate_users_table(con)
+    populate_similars_table(con)
 
 
 def create_track_table(con: sqlite3.Connection):

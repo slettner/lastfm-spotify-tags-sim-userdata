@@ -72,34 +72,34 @@ def populate_tracks_table(con: sqlite3.Connection, limit: Optional[int] = None):
         SELECT * FROM tags WHERE id_dataset = '{}';
     """
 
-    def _create_track(
-        connection: sqlite3.Connection, track: Dict, name2track_id: Dict
-    ) -> str:
+    def _bulk_create_track(
+        connection: sqlite3.Connection, tracks: List[Dict], name2track_ids: Dict
+    ):
         cur = connection.cursor()
-        cur.execute(
-            sql_insert_track,
-            tuple(
-                [
-                    name2track_id[track["name"]],
-                    track["id_spotify"],
-                    track["url_spotify_preview"],
-                    track["url_lastfm"],
-                    track["artist"],
-                    track["name"],
-                ]
-            ),
-        )
+        all_data = []
+        for _track in tracks:
+            all_data.append(
+                (
+                    name2track_ids[_track["name"]],
+                    _track["id_spotify"],
+                    _track["url_spotify_preview"],
+                    _track["url_lastfm"],
+                    _track["artist"],
+                    _track["name"],
+                ),
+            )
+        cur.executemany(sql_insert_track, all_data)
         connection.commit()
-        return name2track_id[track["name"]]
 
-    def _create_tags(
-        connection: sqlite3.Connection, tags_data: Dict, foreign_key: str
-    ) -> str:
+    def _bulk_create_tags(
+        connection: sqlite3.Connection, tags_data: List[Dict], foreign_keys: List[str]
+    ):
         cur = connection.cursor()
-        all_data = tuple([foreign_key] + [tags_data[name] for name in all_tags])
-        cur.execute(sql_insert_tags, all_data)
+        all_data = []
+        for _tags, key in zip(tags_data, foreign_keys):
+            all_data.append(tuple([key] + [_tags[name] for name in all_tags]))
+        cur.executemany(sql_insert_tags, all_data)
         connection.commit()
-        return cur.lastrowid
 
     def _get_tags(connection: sqlite3.Connection, d_id: str) -> Dict:
         result = connection.execute(sql_get_tags.format(d_id)).fetchone()
@@ -132,15 +132,29 @@ def populate_tracks_table(con: sqlite3.Connection, limit: Optional[int] = None):
             total_tracks_existing = min(total_tracks_existing, limit)
 
         log.info("Creating tracks and tags table. Takes up to an hour.")
+        tracks_aggregate = []
+        tags_aggregate = []
+        keys_aggregate = []
         with tqdm(total=total_tracks_existing) as pbar:
             for row in con_processed.execute(sql_fetch):
                 if row["name"] in mapping and row["name"] not in created_tracks_names:
-                    last_row_id = _create_track(con, row, mapping)
+                    tracks_aggregate.append(row)
                     tags = _get_tags(con_processed, row["id_dataset"])
-                    _create_tags(con, tags, foreign_key=last_row_id)
+                    tags_aggregate.append(tags)
+                    keys_aggregate.append(mapping[row["name"]])
                     total_tracks_created += 1
                     created_tracks_names.add(row["name"])
                 pbar.update(1)
+                if len(tracks_aggregate) >= 100:
+                    _bulk_create_track(con, tracks_aggregate, mapping)
+                    _bulk_create_tags(con, tags_aggregate, keys_aggregate)
+                    tracks_aggregate = []
+                    tags_aggregate = []
+                    keys_aggregate = []
+        # process remainder
+        if len(tracks_aggregate) > 0:
+            _bulk_create_track(con, tracks_aggregate, mapping)
+            _bulk_create_tags(con, tags_aggregate, keys_aggregate)
 
     log.info(f"Created {total_tracks_created} tracks with according tags 🙌🏼.")
 
