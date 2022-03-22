@@ -92,6 +92,16 @@ def get_users(con: sqlite3.Connection, offset: int = 0, limit: int = 100) -> Lis
 
 
 @maybe_wrap_connection
+def get_users_by_ids(con: sqlite3.Connection, ids: List[str]) -> List[User]:
+    """ Get users by ids """
+    sql_query = f"""
+           SELECT * FROM users WHERE user_id IN ({_to_sql_string(ids)});
+       """
+    rows = con.execute(sql_query).fetchall()
+    return [User(**row) for row in rows]
+
+
+@maybe_wrap_connection
 def get_track_listeners(
     con: sqlite3.Connection, tracks: List[Track]
 ) -> Dict[str, List[str]]:
