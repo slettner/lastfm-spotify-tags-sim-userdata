@@ -1,4 +1,9 @@
 # lastfm-spotify-tags-sim-userdata
+
+<p align="center">
+<img src="https://icon-library.com/images/last-fm-icon/last-fm-icon-28.jpg" alt="LastFm Logo" width="350px">
+<br>
+
 Version of the Million Songs Dataset that yields 30sec of audio, lastfm tags, lastfm similarity, and echo profile user data per song.
 Specifically, the dataset contains around 130k songs and for each songs the following data is available:
 - `track_id` from MSD (primary key)
