@@ -3,8 +3,8 @@ from collections import defaultdict, namedtuple
 from contextlib import contextmanager
 from typing import Dict, List, Optional
 
+from lastfm_dataset import DB_PATH, maybe_wrap_connection, row_factory
 from lastfm_dataset.constants import PATH_TO_RESULT
-from lastfm_dataset.create.utils import row_factory
 
 
 @contextmanager
@@ -33,6 +33,7 @@ def _to_sql_string(vals: List[str]) -> str:
     return ", ".join(ids)
 
 
+@maybe_wrap_connection
 def get_tracks_by_ids(con: sqlite3.Connection, ids: List[str]) -> List[Track]:
     sql_query = f"""
         SELECT * FROM tracks WHERE track_id IN ({_to_sql_string(ids)});
@@ -41,6 +42,7 @@ def get_tracks_by_ids(con: sqlite3.Connection, ids: List[str]) -> List[Track]:
     return [Track(**row) for row in rows]
 
 
+@maybe_wrap_connection
 def get_tracks(
     con: sqlite3.Connection, offset: int = 0, limit: int = 100
 ) -> List[Track]:
@@ -52,6 +54,7 @@ def get_tracks(
     return [Track(**row) for row in rows]
 
 
+@maybe_wrap_connection
 def get_tags(con: sqlite3.Connection, tracks: List[Track]) -> Dict[str, List[str]]:
     """Keys are track_ids and values the corresponding tags"""
     sql_query = f"""
@@ -64,6 +67,7 @@ def get_tags(con: sqlite3.Connection, tracks: List[Track]) -> Dict[str, List[str
     return result
 
 
+@maybe_wrap_connection
 def get_similars(con: sqlite3.Connection, tracks: List[Track]) -> Dict[str, List[str]]:
     """Keys are track_ids and values the corresponding similar track_ids. Values can be empty list. """
     sql_query = """
@@ -77,6 +81,7 @@ def get_similars(con: sqlite3.Connection, tracks: List[Track]) -> Dict[str, List
     return result
 
 
+@maybe_wrap_connection
 def get_users(con: sqlite3.Connection, offset: int = 0, limit: int = 100) -> List[User]:
     """Get users with pagination."""
     sql_query = f"""
@@ -86,6 +91,7 @@ def get_users(con: sqlite3.Connection, offset: int = 0, limit: int = 100) -> Lis
     return [User(**row) for row in rows]
 
 
+@maybe_wrap_connection
 def get_track_listeners(
     con: sqlite3.Connection, tracks: List[Track]
 ) -> Dict[str, List[str]]:
@@ -100,6 +106,7 @@ def get_track_listeners(
     return result
 
 
+@maybe_wrap_connection
 def get_user_listening_history(
     con: sqlite3.Connection, users: List[User]
 ) -> Dict[str, List[str]]:

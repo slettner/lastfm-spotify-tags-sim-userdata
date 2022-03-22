@@ -4,6 +4,7 @@ import sqlite3
 from contextlib import contextmanager
 from typing import List, Optional
 
+from lastfm_dataset import row_factory
 from lastfm_dataset.constants import PATH_TO_RESULT
 from lastfm_dataset.create.similars_data import populate_similars_table
 from lastfm_dataset.create.track_and_tags_data import (
@@ -11,7 +12,6 @@ from lastfm_dataset.create.track_and_tags_data import (
     populate_tracks_table,
 )
 from lastfm_dataset.create.user_behavior_data import populate_users_table
-from lastfm_dataset.create.utils import row_factory
 
 
 @contextmanager
