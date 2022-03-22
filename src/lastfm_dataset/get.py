@@ -1,12 +1,18 @@
+import sqlite3
+from collections import defaultdict, namedtuple
 from contextlib import contextmanager
+from typing import Dict, List, Optional
 
 from lastfm_dataset.constants import PATH_TO_RESULT
 from lastfm_dataset.create.utils import row_factory
 
 
 @contextmanager
-def get_connection():
-    con = sqlite3.connect(PATH_TO_RESULT, isolation_level=None)
+def get_connection(path: Optional[str] = None):
+    if path is None:
+        path = PATH_TO_RESULT
+
+    con = sqlite3.connect(path, isolation_level=None)
     con.row_factory = row_factory
 
     try:
@@ -14,10 +20,6 @@ def get_connection():
     finally:
         con.close()
 
-
-import sqlite3
-from collections import defaultdict, namedtuple
-from typing import Dict, List, overload
 
 Track = namedtuple(
     "Tracks",
