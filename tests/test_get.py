@@ -14,6 +14,7 @@ from lastfm_dataset.get import (
     get_tracks_by_ids,
     get_user_listening_history,
     get_users,
+    get_users_by_ids,
 )
 
 
@@ -116,6 +117,19 @@ def test_get_user(con: sqlite3.Connection):
         users_fist_half
     ) + extract_user_ids(users_second_half)
     assert validate_user_ids_many(extract_user_ids(users_all))
+
+
+def test_get_users_by_ids(con: sqlite3.Connection):
+    ids = [
+        "b80344d063b5ccb3212f76538f3d9e43d87dca9e",
+        "85c1f87fea955d09b4bec2e36aee110927aedf9a",
+        "bd4c6e843f00bd476847fb75c47b4fb430a06856",
+    ]
+    users = get_users_by_ids(con, ids=ids)
+
+    assert len(users) == 3
+    assert sorted(ids) == sorted(extract_user_ids(users))
+    assert validate_user_ids_many(extract_user_ids(users))
 
 
 def test_get_track_listener(con: sqlite3.Connection):
