@@ -30,9 +30,9 @@ def maybe_wrap_connection(func):
                 con.row_factory = row_factory
                 if "con" in kwargs:
                     kwargs.pop("con")
-                else:
-                    args = args[1:]  # remove the first argument
-                return functools.partial(func, con=con)(*args, **kwargs)
+                if len(args) > 0 and isinstance(args[0], sqlite3.Connection):
+                    args = args[1:]
+                return func(con, *args, **kwargs)
         else:
             return func(*args, **kwargs)
 
