@@ -5,14 +5,14 @@
 <br>
 
 Version of the Million Songs Dataset that yields 30sec of audio, lastfm tags, lastfm similarity, and echo profile user data per song.
-Specifically, the dataset contains around 130k songs and for each songs the following data is available:
+Specifically, the dataset contains around 50k songs and for each songs the following data is available:
 - `track_id` from MSD (primary key)
 - `song_name` name of the song
 - `song_arist` artist of the song
 - `lastfm_url` link to the song on LastFM
 - `tags` from the lastfm dataset (genre descriptors)
-- `similars` from the lastfm dataset (list of `track_id`) with score
-- `users` from the Echo Nest dataset with play count
+- `similars` from the lastfm dataset (list of `track_id`) with score (not for every track)
+- `users` from the Echo Nest dataset with play count (not for every track, but all users have > 0 track of listening history
 - `preview_url` to the 30sec Spotify preview of the song (mp3)
 - `spotify_id` can e.g. be used to query Spotify API for getTrack
 
