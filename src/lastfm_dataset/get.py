@@ -53,7 +53,7 @@ def get_tracks(
 def get_tags(con: sqlite3.Connection, tracks: List[Track]) -> Dict[str, List[str]]:
     """Keys are track_ids and values the corresponding tags"""
     sql_query = f"""
-        SELECT * FROM tags WHERE 'tags.track_id' in ({_to_sql_string([t.track_id for t in tracks])});
+        SELECT * FROM tags WHERE tags.track_id in ({_to_sql_string([t.track_id for t in tracks])});
     """
     rows = con.execute(sql_query).fetchall()
     result = {
@@ -63,9 +63,9 @@ def get_tags(con: sqlite3.Connection, tracks: List[Track]) -> Dict[str, List[str
 
 
 def get_similars(con: sqlite3.Connection, tracks: List[Track]) -> Dict[str, List[str]]:
-    """Keys are track_ids and values the corresponding similar track_ids"""
+    """Keys are track_ids and values the corresponding similar track_ids. Values can be empty list. """
     sql_query = """
-        SELECT * FROM similar WHERE 'track_id_a' = '{}';
+        SELECT * FROM similar WHERE similar.track_id_a = '{}';
     """
     result = dict()
     for track in tracks:
@@ -89,7 +89,7 @@ def get_track_listeners(
 ) -> Dict[str, List[str]]:
     """Keys are track_ids and values are corresponding user that listened to that track"""
     sql_query = f"""
-        SELECT * FROM track_users WHERE track_id in ({_to_sql_string([track.track_id for track in tracks])});
+        SELECT * FROM track_users WHERE track_users.track_id in ({_to_sql_string([track.track_id for track in tracks])});
     """
     rows = con.execute(sql_query).fetchall()
     result = defaultdict(list)
@@ -100,10 +100,10 @@ def get_track_listeners(
 
 def get_user_listening_history(
     con: sqlite3.Connection, users: List[User]
-) -> List[Track]:
-    """Finds all tracks the users listened to"""
+) -> Dict[str, List[str]]:
+    """Finds all tracks the users listened to. Every user has at least on track he listened to. """
     sql_query = f"""
-        SELECT * FROM track_users WHERE user_id ({_to_sql_string([u.user_id for u in users])});
+        SELECT * FROM track_users WHERE track_users.user_id in ({_to_sql_string([u.user_id for u in users])});
     """
     rows = con.execute(sql_query).fetchall()
     result = defaultdict(list)

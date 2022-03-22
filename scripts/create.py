@@ -15,7 +15,7 @@ def main():
     log.info("Creating Tables.")
     with create_database_file(overwrite_existing=True) as con:
         create_all_tables(con)
-        populate_all_tables(con, limit=100)
+        populate_all_tables(con)
 
 
 if __name__ == "__main__":

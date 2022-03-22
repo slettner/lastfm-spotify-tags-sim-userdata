@@ -38,7 +38,7 @@ def is_user_id(user_id: str) -> bool:
         return False
     if not user_id.isalnum():
         return False
-    if len(user_id) != 30:
+    if len(user_id) != 40:
         return False
     return True
 
@@ -93,13 +93,13 @@ def test_get_tags(con: sqlite3.Connection):
 
 
 def test_get_similar(con: sqlite3.Connection):
-    tracks = get_tracks(con, offset=0, limit=2)
+    tracks = get_tracks(con, offset=0, limit=5)
 
     similar = get_similars(con, tracks)
 
     assert sorted(extract_track_ids(tracks)) == sorted(similar.keys())
-    assert all([len(s) for s in similar.values()])
-    assert validate_track_ids_many(similar.keys())
+    # assert all([len(s) for s in similar.values()])  # there can be tracks with no similar songs.
+    assert validate_track_ids_many(list(similar.keys()))
     assert validate_track_ids_many([_id for sim in similar.values() for _id in sim])
 
 
@@ -112,19 +112,21 @@ def test_get_user(con: sqlite3.Connection):
     assert len(users_fist_half) == 50
     assert len(users_second_half) == 50
 
-    assert extract_user_ids(users_all) + extract_user_ids(
+    assert extract_user_ids(users_all) == extract_user_ids(
         users_fist_half
-    ) == extract_user_ids(users_second_half)
+    ) + extract_user_ids(users_second_half)
     assert validate_user_ids_many(extract_user_ids(users_all))
 
 
 def test_get_track_listener(con: sqlite3.Connection):
-    tracks = get_tracks(con, offset=0, limit=2)
+    tracks = get_tracks(con, offset=0, limit=20)
 
     listeners = get_track_listeners(con, tracks)
 
-    assert sorted(extract_track_ids(tracks)) == sorted(listeners.keys())
-    assert validate_track_ids_many(listeners.keys())
+    # not all tracks have a user that listened to them.
+    assert set(extract_track_ids(tracks)) >= set(listeners.keys())
+
+    assert validate_track_ids_many(list(listeners.keys()))
     assert validate_user_ids_many(
         [_id for users in listeners.values() for _id in users]
     )
@@ -136,8 +138,8 @@ def test_get_user_listening_history(con: sqlite3.Connection):
     history = get_user_listening_history(con, users)
 
     assert sorted(extract_user_ids(users)) == sorted(history.keys())
-    assert all([len(s) > 0 for s in history.value()])
-    assert validate_user_ids_many(history.keys())
+    assert all([len(s) > 0 for s in history.values()])
+    assert validate_user_ids_many(list(history.keys()))
     assert validate_track_ids_many(
         [_id for tracks in history.values() for _id in tracks]
     )

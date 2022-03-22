@@ -5,7 +5,6 @@ Threading to the rescue, but still takes a couple of minutes.
 """
 import json
 import logging
-import os
 
 from lastfm_dataset.constants import PATH_TO_NAME2ID_MAPPING, PATH_TO_NAME2ID_SUMMARY
 from lastfm_dataset.create.track_and_tags_data import get_track_name2track_id_mapping

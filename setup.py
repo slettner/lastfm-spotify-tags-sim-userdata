@@ -17,4 +17,3 @@ setup(
     install_requires=read_requirements("requirements.txt"),
     author="Sebastian Lettner",
 )
-
