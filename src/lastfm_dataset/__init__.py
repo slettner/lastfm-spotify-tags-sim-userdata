@@ -8,6 +8,10 @@ DB_PATH: Union[None, str, pathlib.Path] = None
 
 
 def init(path: Union[str, pathlib.Path]):
+    """
+    Tells the package where the db file is located so that the `get` module can
+    create connection as needing the user to pass it everytime.
+    """
     global DB_PATH
     DB_PATH = path
 

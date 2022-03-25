@@ -1,7 +1,7 @@
 import sqlite3
 from collections import defaultdict, namedtuple
 from contextlib import contextmanager
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from lastfm_dataset import DB_PATH, maybe_wrap_connection, row_factory
 from lastfm_dataset.constants import PATH_TO_RESULT
@@ -22,10 +22,10 @@ def get_connection(path: Optional[str] = None):
 
 
 Track = namedtuple(
-    "Tracks",
+    "Track",
     ["track_id", "artist", "name", "spotify_preview_url", "lastfm_url", "spotify_id"],
 )
-User = namedtuple("Users", ["user_id"])
+User = namedtuple("User", ["user_id"])
 
 
 def _to_sql_string(vals: List[str]) -> str:
@@ -68,16 +68,21 @@ def get_tags(con: sqlite3.Connection, tracks: List[Track]) -> Dict[str, List[str
 
 
 @maybe_wrap_connection
-def get_similars(con: sqlite3.Connection, tracks: List[Track]) -> Dict[str, List[str]]:
+def get_similars(
+    con: sqlite3.Connection, tracks: Union[List[Track], List[str]]
+) -> Dict[str, List[str]]:
     """Keys are track_ids and values the corresponding similar track_ids. Values can be empty list. """
     sql_query = """
         SELECT * FROM similar WHERE similar.track_id_a = '{}';
     """
+    if isinstance(tracks[0], Track):
+        tracks: List[str] = [t.track_id for t in tracks]
+
     result = dict()
     for track in tracks:
-        rows = con.execute(sql_query.format(track.track_id)).fetchall()
+        rows = con.execute(sql_query.format(track)).fetchall()
         similars = [row["track_id_b"] for row in rows]
-        result[track.track_id] = similars
+        result[track] = similars
     return result
 
 

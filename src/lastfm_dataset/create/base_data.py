@@ -1,4 +1,4 @@
-""" Impements table creations. """
+""" Implements table creations. """
 import os
 import sqlite3
 from contextlib import contextmanager
